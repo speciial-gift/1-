@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura | Premium Event & Anniversary Template</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@300;400;600;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'arabic-serif': ['Amiri', 'serif'],
+                        'arabic-sans': ['Cairo', 'sans-serif'],
+                        'sans': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: { dark: '#0f050b' }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body {
+            background-color: #0f050b;
+            color: #fff1f2;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f050b; }
+        ::-webkit-scrollbar-thumb { background: #4c1d2e; border-radius: 10px; opacity: 0.5;}
+        ::-webkit-scrollbar-thumb:hover { background: #881337; }
+
+        .glass-dark {
+            background: rgba(20, 5, 12, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .glass-pro {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        /* Animations */
+        @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .animate-spin-slow { animation: spin-slow 15s linear infinite; }
+
+        @keyframes bounce-slow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .animate-bounce-slow { animation: bounce-slow 3s ease-in-out infinite; }
+
+        @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fade-in 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+
+        @keyframes scale-in { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .animate-scale-in { animation: scale-in 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+
+        @keyframes shake-gift {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(-5deg) scale(1.1); }
+            50% { transform: rotate(5deg) scale(1.1); }
+            75% { transform: rotate(-5deg) scale(1.1); }
+            100% { transform: rotate(0deg) scale(1); }
+        }
+        .shake-animation { animation: shake-gift 0.5s ease-in-out; }
+
+        /* Blinking cursor for typewriter */
+        .cursor-blink::after {
+            content: '|';
+            animation: blink 1s step-start infinite;
+            color: #fb7185;
+            margin-right: 2px;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* Custom Audio Player Range */
+        .custom-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 12px; height: 12px;
+            background: white; border-radius: 50%;
+            cursor: pointer; box-shadow: 0 0 10px rgba(236, 72, 153, 0.8);
+        }
+
+        ::selection { background-color: rgba(244, 63, 94, 0.5); color: white; }
+        .hidden-section { display: none !important; }
+        .nav-active { color: #fb7185 !important; transform: scale(1.1); }
+        .nav-active-dot { display: block !important; }
+    </style>
+</head>
+<body class="selection:bg-rose-500/50 selection:text-white">
+
+    <!-- Ambient Glows -->
+    <div class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div class="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-[#e6b981]/5 rounded-full blur-[150px]"></div>
+        <div class="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-rose-900/10 rounded-full blur-[150px]"></div>
+    </div>
+
+    <!-- Night Sky & Particle Canvas -->
+    <canvas id="particleCanvas" class="fixed inset-0 pointer-events-none z-0 mix-blend-screen opacity-80"></canvas>
+
+    <!-- Audio Element for Hidden Voice Note -->
+    <audio id="voice-note-audio" src="demo-record.mp3" preload="auto"></audio>
+
+    <!-- Collapsible Spotify Player -->
+    <div id="spotify-wrapper" class="fixed top-6 left-6 z-50 flex items-start gap-3 transition-all duration-500 hidden">
+        <button id="spotify-toggle" onclick="toggleSpotify()" class="glass-dark p-3 rounded-full hover:scale-110 transition-all z-10 text-rose-400 border border-rose-900/50 shadow-[0_0_15px_rgba(225,29,72,0.3)]">
+           <i data-lucide="music" class="w-6 h-6"></i>
+        </button>
+        <div id="spotify-iframe-container" class="overflow-hidden transition-all duration-500 w-0 opacity-0 rounded-2xl shadow-[0_0_20px_rgba(225,29,72,0.2)] bg-black/50 backdrop-blur-md border border-rose-900/50">
+           <iframe style="border-radius: 16px; min-width: 260px;" src="https://open.spotify.com/embed/track/placeholder?utm_source=generator" width="100%" height="80" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+        </div>
+    </div>
+
+    <!-- ==================== LOCK SCREEN ==================== -->
+    <div id="lock-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#070506] text-rose-50 px-6 overflow-y-auto py-10 transition-opacity duration-1000">
+        <div class="text-center max-w-xl relative z-10 glass-pro p-10 md:p-14 rounded-[2rem] border border-rose-900/30 w-full animate-fade-in shadow-[0_0_40px_rgba(225,29,72,0.1)]">
+            <div class="w-16 h-16 mx-auto mb-8 rounded-full border border-rose-500/30 flex items-center justify-center bg-rose-500/10">
+                <i data-lucide="lock" class="w-8 h-8 text-rose-400 drop-shadow-[0_0_10px_rgba(244,63,94,0.5)]"></i>
+            </div>
+            <h1 class="text-3xl md:text-5xl font-arabic-serif font-bold text-transparent bg-clip-text bg-gradient-to-l from-rose-200 via-rose-100 to-amber-100 mb-4 leading-tight">
+                هذا المحتوى محمي
+            </h1>
+            <p class="text-sm md:text-base text-rose-200/60 mb-10 font-arabic-sans font-light leading-relaxed max-w-sm mx-auto">
+                هذه الصفحة مخصصة لمناسبة خاصة ولا يمكن الوصول إليها قبل الموعد المحدد.<br/>
+                <span class="text-amber-400 font-bold mt-2 inline-block">سيتم التفعيل التلقائي بعد انتهاء العداد</span>
+            </p>
+            
+            <!-- Countdown Timer -->
+            <div class="flex justify-center gap-4 md:gap-6 mt-8 mb-12" dir="ltr">
+                <div class="flex flex-col items-center">
+                    <span id="lock-days" class="text-3xl md:text-4xl font-light text-rose-100 font-sans tracking-wider mb-2 drop-shadow-md">00</span>
+                    <span class="text-[10px] md:text-xs text-rose-400/70 font-arabic-sans tracking-widest uppercase">يوم</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span id="lock-hours" class="text-3xl md:text-4xl font-light text-rose-100 font-sans tracking-wider mb-2 drop-shadow-md">00</span>
+                    <span class="text-[10px] md:text-xs text-rose-400/70 font-arabic-sans tracking-widest uppercase">ساعة</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span id="lock-minutes" class="text-3xl md:text-4xl font-light text-rose-100 font-sans tracking-wider mb-2 drop-shadow-md">00</span>
+                    <span class="text-[10px] md:text-xs text-rose-400/70 font-arabic-sans tracking-widest uppercase">دقيقة</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span id="lock-seconds" class="text-3xl md:text-4xl font-light text-rose-100 font-sans tracking-wider mb-2 drop-shadow-md">00</span>
+                    <span class="text-[10px] md:text-xs text-rose-400/70 font-arabic-sans tracking-widest uppercase">ثانية</span>
+                </div>
+            </div>
+
+            <!-- Password Input -->
+            <div class="max-w-xs mx-auto border-t border-rose-900/20 pt-8 mt-4">
+                <input 
+                    type="password" 
+                    id="password-input"
+                    placeholder="كلمة المرور (demo)" 
+                    class="w-full bg-transparent border-b border-rose-500/30 pb-3 text-center text-rose-100 focus:outline-none focus:border-rose-400 transition-all font-sans tracking-[0.3em] placeholder:text-rose-100/20"
+                />
+                <p class="text-rose-400/80 text-sm md:text-base mt-6 font-arabic-sans font-bold leading-relaxed">
+                    يمكنك الدخول الآن<br/> باستخدام كلمة المرور للتجربة
+                </p>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ==================== MAIN APP CONTENT ==================== -->
+    <div id="main-app" class="hidden-section w-full h-full pt-12 relative z-10 opacity-0 transition-opacity duration-1000">
+
+        <div id="views">
+            
+            <!-- 1. Home View -->
+            <div id="view-welcome" class="page-section min-h-screen flex flex-col items-center justify-center px-6 pb-24 pt-20">
+                <div class="animate-fade-in text-center max-w-3xl w-full">
+                    <div class="mb-8 relative inline-block">
+                        <i data-lucide="sparkles" class="absolute -top-6 -right-8 w-6 h-6 text-amber-300 opacity-80 animate-pulse"></i>
+                        <h1 class="text-6xl md:text-8xl font-arabic-serif font-bold text-transparent bg-clip-text bg-gradient-to-l from-rose-200 via-rose-100 to-amber-100 leading-tight tracking-wide mb-4">
+                            عنوان الحدث المميز
+                        </h1>
+                        <h1 class="text-4xl md:text-6xl font-arabic-serif text-rose-400 italic">اسم الشخص أو المناسبة</h1>
+                    </div>
+                    <p class="text-lg md:text-xl text-rose-100/70 mb-12 font-arabic-sans font-light max-w-lg mx-auto leading-relaxed">
+                        نص تمهيدي يعبر عن أهمية هذه الصفحة أو المناسبة الخاصة التي تم إنشاء هذا القالب من أجلها، ليكون ذكرى لا تُنسى.
+                    </p>
+                    <a href="#timeline" class="group inline-flex items-center justify-center gap-3 mx-auto px-10 py-4 bg-gradient-to-l from-rose-700 to-rose-900 text-white rounded-full text-lg font-arabic-sans tracking-widest shadow-[0_0_20px_rgba(225,29,72,0.4)] hover:shadow-[0_0_40px_rgba(225,29,72,0.6)] hover:scale-105 transition-all duration-500 border border-rose-500/30">
+                        ابدأ الرحلة <i data-lucide="heart" class="w-5 h-5 fill-current"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 2. Timeline View -->
+            <div id="view-timeline" class="page-section hidden-section min-h-screen py-24 px-4 flex flex-col items-center justify-center pb-32 pt-24">
+                <div class="animate-fade-in max-w-md w-full glass-dark p-6 md:p-8 rounded-[2rem] border border-rose-900/30 relative">
+                    <div class="text-center mb-8">
+                        <h2 class="text-2xl md:text-3xl font-arabic-sans font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-pink-500">
+                            منذ بداية الرحلة ⏳
+                        </h2>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-3 md:gap-4">
+                        <div class="glass-dark bg-white/5 py-4 px-2 rounded-2xl flex flex-col items-center justify-center border border-white/5 shadow-inner">
+                            <span id="ex-years" class="text-2xl md:text-3xl font-bold text-white mb-1 font-sans">0</span>
+                            <span class="text-xs md:text-sm text-white/70 font-arabic-sans">سنين</span>
+                        </div>
+                        <div class="glass-dark bg-white/5 py-4 px-2 rounded-2xl flex flex-col items-center justify-center border border-white/5 shadow-inner">
+                            <span id="ex-months" class="text-2xl md:text-3xl font-bold text-white mb-1 font-sans">0</span>
+                            <span class="text-xs md:text-sm text-white/70 font-arabic-sans">شهور</span>
+                        </div>
+                        <div class="glass-dark bg-white/5 py-4 px-2 rounded-2xl flex flex-col items-center justify-center border border-white/5 shadow-inner">
+                            <span id="ex-days" class="text-2xl md:text-3xl font-bold text-white mb-1 font-sans">0</span>
+                            <span class="text-xs md:text-sm text-white/70 font-arabic-sans">أيام</span>
+                        </div>
+                        <div class="glass-dark bg-white/5 py-4 px-2 rounded-2xl flex flex-col items-center justify-center border border-white/5 shadow-inner">
+                            <span id="ex-hours" class="text-2xl md:text-3xl font-bold text-white mb-1 font-sans">0</span>
+                            <span class="text-xs md:text-sm text-white/70 font-arabic-sans">ساعات</span>
+                        </div>
+                        <div class="glass-dark bg-white/5 py-4 px-2 rounded-2xl flex flex-col items-center justify-center border border-white/5 shadow-inner">
+                            <span id="ex-minutes" class="text-2xl md:text-3xl font-bold text-white mb-1 font-sans">0</span>
+                            <span class="text-xs md:text-sm text-white/70 font-arabic-sans">دقايق</span>
+                        </div>
+                        <div class="glass-dark bg-white/5 py-4 px-2 rounded-2xl flex flex-col items-center justify-center border border-white/5 shadow-inner">
+                            <span id="ex-seconds" class="text-2xl md:text-3xl font-bold text-white mb-1 font-sans">0</span>
+                            <span class="text-xs md:text-sm text-white/70 font-arabic-sans">ثواني</span>
+                        </div>
+                    </div>
+
+                    <!-- Dummy Audio Player (Visual Only) -->
+                    <div class="w-full glass-dark p-6 rounded-3xl border border-white/10 shadow-lg mt-8" dir="rtl">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg relative overflow-hidden group">
+                                    <i id="dummy-music-icon" data-lucide="music" class="w-6 h-6 text-white absolute z-10 transition-opacity duration-300 opacity-0"></i>
+                                    <i id="dummy-disc-icon" data-lucide="disc" class="w-8 h-8 text-white absolute z-10 transition-opacity duration-300 opacity-100 animate-spin-slow"></i>
+                                </div>
+                                <div class="flex flex-col items-start">
+                                    <span class="text-white font-bold text-lg font-arabic-sans">المسار الصوتي 🎵</span>
+                                    <span class="text-pink-400 text-sm font-arabic-sans">اسم الفنان أو المقطع</span>
+                                </div>
+                            </div>
+                            
+                            <button id="dummy-play-btn" class="w-14 h-14 rounded-full bg-white/10 hover:bg-white/20 border border-white/5 flex items-center justify-center transition-all focus:outline-none shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                                <i id="dummy-play-icon" data-lucide="pause" class="w-6 h-6 text-white" fill="currentColor"></i>
+                            </button>
+                        </div>
+
+                        <div class="flex items-center gap-3 mb-4" dir="ltr">
+                            <span class="text-xs text-white/50 w-8 text-right font-sans">1:34</span>
+                            <input type="range" id="dummy-progress" min="0" max="100" value="40" class="w-full h-2 bg-white/10 rounded-full appearance-none cursor-pointer custom-range" style="background: linear-gradient(to right, #ec4899 40%, rgba(255,255,255,0.1) 40%)">
+                            <span class="text-xs text-white/50 w-8 font-sans">4:12</span>
+                        </div>
+
+                        <div class="flex items-center justify-between mt-4" dir="ltr">
+                            <div class="flex items-center gap-3 w-1/2">
+                               <i data-lucide="volume-2" class="w-5 h-5 text-white/50"></i>
+                               <input type="range" id="dummy-volume" min="0" max="1" step="0.01" value="0.8" class="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer custom-range" style="background: linear-gradient(to right, #ec4899 80%, rgba(255,255,255,0.1) 80%)">
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/5 hover:bg-white/10 transition-colors cursor-pointer" onclick="document.getElementById('dummy-volume').value=0; updateVolumeUI(0);">
+                               <i data-lucide="volume-x" class="w-5 h-5 text-white/50"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-8 mb-6">
+                        <p class="text-xl md:text-2xl font-arabic-sans font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-blue-400 flex items-center justify-center gap-2">
+                            رسالة قصيرة مميزة <svg class="w-5 h-5 text-pink-500 fill-pink-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                        </p>
+                    </div>
+
+                    <div class="w-full bg-[#e3ded9] rounded-2xl p-6 shadow-inner flex items-center justify-center mt-4 border-2 border-white/10 overflow-hidden relative min-h-[120px]">
+                        <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/paper-fibers.png')] mix-blend-multiply"></div>
+                        <p class="text-red-700 font-bold text-3xl md:text-4xl text-center transform -rotate-2" style="font-family: 'Comic Sans MS', cursive, sans-serif">
+                            Your Custom <br/> Text Here,
+                        </p>
+                    </div>
+                </div>
+                <div class="mt-16 flex justify-center w-full relative z-20">
+                    <a href="#highlights" class="group inline-flex items-center gap-3 px-8 py-3 bg-transparent border border-rose-500/30 text-rose-200 rounded-full hover:bg-rose-900/30 transition-all duration-300 font-arabic-sans text-sm tracking-wide">
+                        <span>ما الذي يجعل هذا مميزاً؟</span>
+                        <i data-lucide="chevron-left" class="w-4 h-4 group-hover:-translate-x-2 transition-transform duration-300"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 3. Highlights View -->
+            <div id="view-highlights" class="page-section hidden-section min-h-screen py-24 px-6 max-w-6xl mx-auto flex flex-col justify-center pb-32 pt-24">
+                <div class="animate-fade-in text-center mb-16">
+                    <h2 class="text-4xl md:text-5xl font-arabic-serif text-rose-300 mb-4 font-light">ما الذي يميز هذه اللحظات؟</h2>
+                    <div class="h-[1px] w-20 bg-rose-500/50 mx-auto"></div>
+                </div>
+                <div class="animate-fade-in grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="special-cards">
+                    <!-- Injected by JS -->
+                </div>
+                <div class="mt-16 flex justify-center w-full relative z-20">
+                    <a href="#story" class="group inline-flex items-center gap-3 px-8 py-3 bg-transparent border border-rose-500/30 text-rose-200 rounded-full hover:bg-rose-900/30 transition-all duration-300 font-arabic-sans text-sm tracking-wide">
+                        <span>القصة والذكريات</span>
+                        <i data-lucide="chevron-left" class="w-4 h-4 group-hover:-translate-x-2 transition-transform duration-300"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 4. Story View -->
+            <div id="view-story" class="page-section hidden-section min-h-screen py-24 px-6 max-w-4xl mx-auto flex flex-col justify-center pb-32 pt-24">
+                <div class="animate-fade-in text-center mb-16">
+                    <h2 class="text-4xl md:text-5xl font-arabic-serif text-amber-200 mb-4 font-light">القصة والذكريات</h2>
+                    <div class="h-[1px] w-20 bg-amber-500/50 mx-auto"></div>
+                </div>
+                <div class="animate-fade-in relative border-r border-rose-800/50 mr-4 md:mr-1/2 pr-8 md:pr-0 space-y-16">
+                    <div class="relative md:w-1/2 md:pl-12 text-right md:text-left">
+                        <div class="absolute -right-[37px] md:-left-[5px] md:right-auto top-2 w-3 h-3 bg-amber-400 rounded-full ring-4 ring-[#0f050b]"></div>
+                        <div class="glass-pro p-8 rounded-2xl border border-amber-900/30 hover:border-amber-500/30 transition-all duration-500">
+                            <p class="text-xs text-amber-500 tracking-widest mb-4 font-sans">DD/MM/YYYY</p>
+                            <h3 class="text-2xl font-arabic-serif text-white mb-3 font-light">البداية</h3>
+                            <p class="text-sm md:text-base text-rose-100/70 leading-relaxed font-arabic-sans">
+                                "هنا تبدأ القصة، يمكنك كتابة تفاصيل اللقاء الأول أو بداية الحدث أو اللحظة التي ترغب في توثيقها."
+                            </p>
+                        </div>
+                    </div>
+                    <div class="relative md:w-1/2 md:mr-auto md:pr-12 text-right">
+                        <div class="absolute -right-[37px] top-2 w-3 h-3 bg-rose-500 rounded-full ring-4 ring-[#0f050b]"></div>
+                        <div class="glass-pro p-8 rounded-2xl border border-rose-900/30 hover:border-rose-500/30 transition-all duration-500">
+                            <h3 class="text-2xl font-arabic-serif text-white mb-3 font-light mt-2">الرحلة المستمرة</h3>
+                            <p class="text-sm md:text-base text-rose-100/70 leading-relaxed font-arabic-sans">
+                                كل خطوة في هذه الرحلة تستحق أن تُروى، أضف تفاصيلك هنا لتجعل هذا القالب يعبر تماماً عن ذكرياتك المتميزة.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-16 flex justify-center w-full relative z-20">
+                    <a href="#gallery" class="group inline-flex items-center gap-3 px-8 py-3 bg-transparent border border-rose-500/30 text-rose-200 rounded-full hover:bg-rose-900/30 transition-all duration-300 font-arabic-sans text-sm tracking-wide">
+                        <span>معرض الصور</span>
+                        <i data-lucide="chevron-left" class="w-4 h-4 group-hover:-translate-x-2 transition-transform duration-300"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 5. Gallery View -->
+            <div id="view-gallery" class="page-section hidden-section min-h-screen py-24 px-6 max-w-7xl mx-auto pb-32 pt-24">
+                <div class="animate-fade-in text-center mb-16">
+                    <h2 class="text-4xl md:text-5xl font-arabic-serif text-rose-300 mb-4 font-light">معرض الصور</h2>
+                    <div class="h-[1px] w-20 bg-rose-500/50 mx-auto"></div>
+                </div>
+                <div class="animate-fade-in grid grid-cols-1 md:grid-cols-4 gap-4 auto-rows-[250px]" id="gallery-grid">
+                    <!-- Injected by JS -->
+                </div>
+                <div class="mt-16 flex justify-center w-full relative z-20">
+                    <a href="#messages" class="group inline-flex items-center gap-3 px-8 py-3 bg-transparent border border-rose-500/30 text-rose-200 rounded-full hover:bg-rose-900/30 transition-all duration-300 font-arabic-sans text-sm tracking-wide">
+                        <span>رسائل خاصة</span>
+                        <i data-lucide="chevron-left" class="w-4 h-4 group-hover:-translate-x-2 transition-transform duration-300"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 6. Messages View (Typewriter) -->
+            <div id="view-messages" class="page-section hidden-section min-h-screen py-24 px-6 flex flex-col items-center justify-center pb-32 pt-24">
+                <div class="animate-fade-in max-w-4xl mx-auto text-center w-full flex-grow flex flex-col justify-center">
+                    <i data-lucide="quote" class="w-8 h-8 text-rose-500/30 mx-auto mb-10 rotate-180"></i>
+                    <h2 class="text-3xl md:text-5xl font-arabic-serif text-rose-300 mb-16 font-light">رسائل خاصة ومميزة</h2>
+                    
+                    <div class="relative inline-block px-8 py-6 max-w-2xl mx-auto min-h-[150px] flex items-center justify-center">
+                        <p id="typewriter-text" class="text-2xl md:text-4xl font-arabic-serif text-white leading-relaxed font-light cursor-blink">
+                            <!-- Injected line by line -->
+                        </p>
+                    </div>
+                </div>
+                <div class="mt-16 flex justify-center w-full relative z-20">
+                    <a href="#surprise" class="group inline-flex items-center gap-3 px-8 py-3 bg-transparent border border-rose-500/30 text-rose-200 rounded-full hover:bg-rose-900/30 transition-all duration-300 font-arabic-sans text-sm tracking-wide">
+                        <span>المفاجأة المنتظرة</span>
+                        <i data-lucide="chevron-left" class="w-4 h-4 group-hover:-translate-x-2 transition-transform duration-300"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 7. Surprise View -->
+            <div id="view-surprise" class="page-section hidden-section min-h-screen py-24 px-6 flex flex-col items-center justify-center pb-32 pt-24">
+                <div class="animate-fade-in w-full max-w-2xl text-center flex-grow flex flex-col justify-center">
+                    
+                    <div id="surprise-closed" class="glass-pro p-12 md:p-16 rounded-[2rem] text-center border border-rose-900/30 transition-transform cursor-pointer" onmouseover="this.classList.add('shake-animation')" onanimationend="this.classList.remove('shake-animation')">
+                        <div class="w-20 h-20 mx-auto mb-8 rounded-full border border-rose-500/30 flex items-center justify-center bg-rose-500/10">
+                            <i id="gift-icon" data-lucide="gift" class="w-10 h-10 text-rose-400"></i>
+                        </div>
+                        <h2 class="text-2xl md:text-3xl font-arabic-serif text-white mb-10 font-light">مفاجأة خاصة</h2>
+                        <button onclick="openSurprise()" class="px-10 py-3 bg-rose-600 text-white rounded-full text-sm font-arabic-sans tracking-wide hover:bg-rose-500 transition-all shadow-[0_0_20px_rgba(225,29,72,0.4)]">
+                            افتح المفاجأة
+                        </button>
+                    </div>
+
+                    <div id="surprise-opened" class="hidden glass-pro p-10 md:p-16 rounded-[2rem] text-center shadow-[0_0_80px_rgba(225,29,72,0.15)] border border-rose-500/20 relative overflow-hidden">
+                        <i data-lucide="heart" class="w-16 h-16 text-rose-500 mx-auto mb-8 fill-current animate-pulse drop-shadow-[0_0_30px_rgba(244,63,94,0.6)]"></i>
+                        <h2 class="text-3xl md:text-5xl font-arabic-serif text-transparent bg-clip-text bg-gradient-to-b from-rose-100 to-amber-100 mb-6 leading-tight font-bold">
+                            هنا يمكنك وضع الرسالة الختامية الكبرى ❤️
+                        </h2>
+                        <p class="text-lg md:text-xl text-rose-200/80 font-arabic-sans font-light mb-12">
+                            نص تفصيلي يشرح المفاجأة أو يعبر عن المشاعر في هذه المناسبة المميزة ليضيف لمسة شخصية لا تُنسى.
+                        </p>
+                        
+                        <!-- Voice Note Button -->
+                        <div class="border-t border-rose-900/30 pt-8 mt-4">
+                            <p class="text-rose-400/60 text-sm mb-4 font-arabic-sans">استمع إلى الرسالة الصوتية المرفقة 👇</p>
+                            <button onclick="playVoiceNote()" class="group inline-flex items-center justify-center gap-3 mx-auto px-8 py-4 bg-gradient-to-r from-rose-600 to-purple-600 text-white rounded-full text-md font-arabic-sans shadow-[0_0_20px_rgba(225,29,72,0.5)] hover:scale-105 transition-all animate-pulse focus:outline-none">
+                                <i data-lucide="mic" class="w-5 h-5"></i>
+                                رسالة صوتية
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div> <!-- End Views -->
+
+        <!-- Floating Bottom Nav Bar -->
+        <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-xl">
+            <div class="glass-dark border border-rose-900/40 rounded-full px-3 py-2 md:px-4 md:py-3 flex items-center justify-between shadow-[0_10px_40px_rgba(0,0,0,0.8)] backdrop-blur-xl">
+                <a href="#welcome" class="nav-btn group relative p-2 rounded-full flex flex-col items-center transition-all duration-300 text-rose-200/40 hover:text-rose-200 hover:bg-white/5">
+                    <i data-lucide="home" class="w-5 h-5 md:w-6 md:h-6"></i>
+                    <span class="nav-dot hidden absolute -bottom-1 md:-bottom-2 w-1 h-1 md:w-1.5 md:h-1.5 bg-rose-500 rounded-full shadow-[0_0_5px_rgba(244,63,94,1)]"></span>
+                </a>
+                <a href="#timeline" class="nav-btn group relative p-2 rounded-full flex flex-col items-center transition-all duration-300 text-rose-200/40 hover:text-rose-200 hover:bg-white/5">
+                    <i data-lucide="clock" class="w-5 h-5 md:w-6 md:h-6"></i>
+                    <span class="nav-dot hidden absolute -bottom-1 md:-bottom-2 w-1 h-1 md:w-1.5 md:h-1.5 bg-rose-500 rounded-full shadow-[0_0_5px_rgba(244,63,94,1)]"></span>
+                </a>
+                <a href="#highlights" class="nav-btn group relative p-2 rounded-full flex flex-col items-center transition-all duration-300 text-rose-200/40 hover:text-rose-200 hover:bg-white/5">
+                    <i data-lucide="star" class="w-5 h-5 md:w-6 md:h-6"></i>
+                    <span class="nav-dot hidden absolute -bottom-1 md:-bottom-2 w-1 h-1 md:w-1.5 md:h-1.5 bg-rose-500 rounded-full shadow-[0_0_5px_rgba(244,63,94,1)]"></span>
+                </a>
+                <a href="#story" class="nav-btn group relative p-2 rounded-full flex flex-col items-center transition-all duration-300 text-rose-200/40 hover:text-rose-200 hover:bg-white/5">
+                    <i data-lucide="book-open" class="w-5 h-5 md:w-6 md:h-6"></i>
+                    <span class="nav-dot hidden absolute -bottom-1 md:-bottom-2 w-1 h-1 md:w-1.5 md:h-1.5 bg-rose-500 rounded-full shadow-[0_0_5px_rgba(244,63,94,1)]"></span>
+                </a>
+                <a href="#gallery" class="nav-btn group relative p-2 rounded-full flex flex-col items-center transition-all duration-300 text-rose-200/40 hover:text-rose-200 hover:bg-white/5">
+                    <i data-lucide="camera" class="w-5 h-5 md:w-6 md:h-6"></i>
+                    <span class="nav-dot hidden absolute -bottom-1 md:-bottom-2 w-1 h-1 md:w-1.5 md:h-1.5 bg-rose-500 rounded-full shadow-[0_0_5px_rgba(244,63,94,1)]"></span>
+                </a>
+                <a href="#messages" class="nav-btn group relative p-2 rounded-full flex flex-col items-center transition-all duration-300 text-rose-200/40 hover:text-rose-200 hover:bg-white/5">
+                    <i data-lucide="message-circle-heart" class="w-5 h-5 md:w-6 md:h-6"></i>
+                    <span class="nav-dot hidden absolute -bottom-1 md:-bottom-2 w-1 h-1 md:w-1.5 md:h-1.5 bg-rose-500 rounded-full shadow-[0_0_5px_rgba(244,63,94,1)]"></span>
+                </a>
+                <a href="#surprise" class="nav-btn group relative p-2 rounded-full flex flex-col items-center transition-all duration-300 text-rose-200/40 hover:text-rose-200 hover:bg-white/5">
+                    <i data-lucide="gift" class="w-5 h-5 md:w-6 md:h-6"></i>
+                    <span class="nav-dot hidden absolute -bottom-1 md:-bottom-2 w-1 h-1 md:w-1.5 md:h-1.5 bg-rose-500 rounded-full shadow-[0_0_5px_rgba(244,63,94,1)]"></span>
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // === Configuration (Generic Demo Settings) ===
+        // Set lock target to 7 days in the future for demo purposes
+        const TARGET_DATE = new Date().getTime() + (7 * 24 * 60 * 60 * 1000); 
+        const START_DATE = new Date('2020-01-01T00:00:00');
+        const SECRET_PASSWORD = "demo";
+        
+        let isUnlockedState = false;
+        let surpriseTriggered = false;
+
+        lucide.createIcons();
+
+        // === Routing Logic (URL Hashes) ===
+        function handleRouting() {
+            if(!isUnlockedState) return; // Prevent routing if locked
+            
+            // Default to welcome if no hash is present
+            let hash = window.location.hash.substring(1) || 'welcome';
+            
+            // Hide all sections
+            document.querySelectorAll('.page-section').forEach(el => el.classList.add('hidden-section'));
+            
+            // Show target section
+            const activeView = document.getElementById('view-' + hash);
+            if(activeView) {
+                activeView.classList.remove('hidden-section');
+            } else {
+                // Fallback
+                document.getElementById('view-welcome').classList.remove('hidden-section');
+                hash = 'welcome';
+            }
+            
+            // Update Navigation active state
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('nav-active', 'text-rose-400');
+                btn.classList.add('text-rose-200/40');
+                btn.querySelector('.nav-dot').classList.add('hidden');
+            });
+            
+            const activeBtn = document.querySelector(`.nav-btn[href="#${hash}"]`);
+            if(activeBtn) {
+                activeBtn.classList.add('nav-active', 'text-rose-400');
+                activeBtn.classList.remove('text-rose-200/40');
+                activeBtn.querySelector('.nav-dot').classList.remove('hidden');
+            }
+
+            // Handle Typewriter Trigger
+            if(hash === 'messages') {
+                startTypewriter();
+            } else {
+                stopTypewriter();
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        // Listen for URL changes
+        window.addEventListener('hashchange', handleRouting);
+
+
+        // === Lock Screen Logic ===
+        function updateLockTimer() {
+            const now = Date.now();
+            const difference = TARGET_DATE - now;
+
+            if (difference <= 0) {
+                unlockApp();
+                return;
+            }
+
+            document.getElementById('lock-days').innerText = String(Math.floor(difference / (1000 * 60 * 60 * 24))).padStart(2, '0');
+            document.getElementById('lock-hours').innerText = String(Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0');
+            document.getElementById('lock-minutes').innerText = String(Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+            document.getElementById('lock-seconds').innerText = String(Math.floor((difference % (1000 * 60)) / 1000)).padStart(2, '0');
+        }
+        setInterval(updateLockTimer, 1000);
+        updateLockTimer();
+
+        document.getElementById('password-input').addEventListener('input', function(e) {
+            if (e.target.value === SECRET_PASSWORD) {
+                unlockApp();
+            }
+        });
+
+        function unlockApp() {
+            if (isUnlockedState) return;
+            isUnlockedState = true;
+            const lockScreen = document.getElementById('lock-screen');
+            lockScreen.style.opacity = '0';
+            setTimeout(() => {
+                lockScreen.style.display = 'none';
+                const mainApp = document.getElementById('main-app');
+                mainApp.classList.remove('hidden-section');
+                setTimeout(() => mainApp.style.opacity = '1', 50);
+                
+                document.getElementById('spotify-wrapper').classList.remove('hidden');
+                
+                updateExactTime();
+                setInterval(updateExactTime, 1000);
+                
+                // Trigger initial routing once unlocked
+                if(!window.location.hash) {
+                    window.location.hash = 'welcome';
+                } else {
+                    handleRouting();
+                }
+            }, 1000);
+        }
+
+        // === Exact Time Together ===
+        function updateExactTime() {
+            const now = new Date();
+            let years = now.getFullYear() - START_DATE.getFullYear();
+            let months = now.getMonth() - START_DATE.getMonth();
+            let days = now.getDate() - START_DATE.getDate();
+
+            if (days < 0) {
+                months -= 1;
+                const prevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+                days += prevMonth.getDate();
+            }
+            if (months < 0) {
+                years -= 1;
+                months += 12;
+            }
+
+            const diff = now - START_DATE;
+            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            const minutes = Math.floor((diff / 1000 / 60) % 60);
+            const seconds = Math.floor((diff / 1000) % 60);
+
+            document.getElementById('ex-years').innerText = years;
+            document.getElementById('ex-months').innerText = months;
+            document.getElementById('ex-days').innerText = days;
+            document.getElementById('ex-hours').innerText = hours;
+            document.getElementById('ex-minutes').innerText = minutes;
+            document.getElementById('ex-seconds').innerText = seconds;
+        }
+
+        // === Spotify Collapsible Logic ===
+        let isSpotifyOpen = false;
+        function toggleSpotify() {
+            const container = document.getElementById('spotify-iframe-container');
+            const icon = document.querySelector('#spotify-toggle i');
+            isSpotifyOpen = !isSpotifyOpen;
+            if (isSpotifyOpen) {
+                container.style.width = '260px';
+                container.style.opacity = '1';
+                container.style.marginLeft = '12px';
+                icon.setAttribute('data-lucide', 'x');
+            } else {
+                container.style.width = '0px';
+                container.style.opacity = '0';
+                container.style.marginLeft = '0px';
+                icon.setAttribute('data-lucide', 'music');
+            }
+            lucide.createIcons();
+        }
+
+        // === Typewriter Logic ===
+        const typewriterMessages = [
+            "هذا نص تجريبي يكتب تلقائياً ليعطي تأثيراً جذاباً.",
+            "يمكنك تخصيص هذه الرسائل لتناسب مناسبتك الخاصة.",
+            "القالب يدعم كتابة نصوص متعددة تظهر تباعاً.",
+            "أضف هنا أعمق وأجمل العبارات التي ترغب بمشاركتها."
+        ];
+        let typeMsgIndex = 0;
+        let typeCharIndex = 0;
+        let isTyping = false;
+        let typeTimeout;
+
+        function startTypewriter() {
+            if(isTyping) return;
+            isTyping = true;
+            typeMsgIndex = 0;
+            typeCharIndex = 0;
+            document.getElementById('typewriter-text').innerHTML = '';
+            typeNextChar();
+        }
+
+        function typeNextChar() {
+            if(!isTyping) return;
+            const target = document.getElementById('typewriter-text');
+            
+            if (typeMsgIndex < typewriterMessages.length) {
+                if (typeCharIndex < typewriterMessages[typeMsgIndex].length) {
+                    target.innerHTML += typewriterMessages[typeMsgIndex].charAt(typeCharIndex);
+                    typeCharIndex++;
+                    typeTimeout = setTimeout(typeNextChar, 60); 
+                } else {
+                    target.innerHTML += '<br><br>';
+                    typeMsgIndex++;
+                    typeCharIndex = 0;
+                    typeTimeout = setTimeout(typeNextChar, 1000); 
+                }
+            } else {
+                isTyping = false;
+                target.classList.remove('cursor-blink');
+            }
+        }
+
+        function stopTypewriter() {
+            isTyping = false;
+            clearTimeout(typeTimeout);
+        }
+
+        // === Dummy Audio Player Logic ===
+        let dummyIsPlaying = true;
+        function toggleDummyPlay() {
+            dummyIsPlaying = !dummyIsPlaying;
+            const playIcon = document.getElementById('dummy-play-icon');
+            const musicIcon = document.getElementById('dummy-music-icon');
+            const discIcon = document.getElementById('dummy-disc-icon');
+
+            if (dummyIsPlaying) {
+                playIcon.setAttribute('data-lucide', 'pause');
+                musicIcon.style.opacity = '0';
+                discIcon.style.opacity = '1';
+                discIcon.classList.add('animate-spin-slow');
+            } else {
+                playIcon.setAttribute('data-lucide', 'play');
+                musicIcon.style.opacity = '1';
+                discIcon.style.opacity = '0';
+                discIcon.classList.remove('animate-spin-slow');
+            }
+            lucide.createIcons();
+        }
+        document.getElementById('dummy-play-btn')?.addEventListener('click', toggleDummyPlay);
+
+        const dummyProgress = document.getElementById('dummy-progress');
+        dummyProgress?.addEventListener('input', (e) => {
+            const val = e.target.value;
+            e.target.style.background = `linear-gradient(to right, #ec4899 ${val}%, rgba(255,255,255,0.1) ${val}%)`;
+        });
+
+        const dummyVolume = document.getElementById('dummy-volume');
+        dummyVolume?.addEventListener('input', (e) => updateVolumeUI(e.target.value));
+        function updateVolumeUI(val) {
+            if(dummyVolume){
+               dummyVolume.value = val;
+               dummyVolume.style.background = `linear-gradient(to right, #ec4899 ${val * 100}%, rgba(255,255,255,0.1) ${val * 100}%)`;
+            }
+        }
+
+        // === Inject Data (Highlights, Gallery) ===
+        const specialTexts = [
+            "نص تجريبي يعبر عن ميزة أو ذكرى جميلة.",
+            "يمكنك إضافة أي نص هنا ليظهر بهذا الشكل الأنيق.",
+            "تصميم زجاجي عصري يتوافق مع مختلف الشاشات.",
+            "هذا المكان مخصص لتسليط الضوء على التفاصيل المهمة.",
+            "كل عنصر في هذا القالب مصمم بعناية فائقة."
+        ];
+        const specialContainer = document.getElementById('special-cards');
+        specialTexts.forEach((text, i) => {
+            const colClass = i === 3 ? "lg:col-start-1 lg:col-span-1.5" : i === 4 ? "lg:col-start-2 lg:col-span-2" : "";
+            specialContainer.innerHTML += `
+                <div class="${colClass} glass-pro p-8 rounded-2xl border border-rose-900/20 hover:border-rose-500/30 hover:-translate-y-2 transition-all duration-500 flex flex-col items-center text-center">
+                    <div class="w-2 h-2 rounded-full bg-rose-500/50 mb-6"></div>
+                    <p class="text-xl md:text-2xl font-arabic-serif text-white/90 leading-relaxed font-light">${text}</p>
+                </div>
+            `;
+        });
+
+        const galleryImages = [
+            { src: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&q=80&w=800", col: "md:col-span-2", row: "md:row-span-2", cap: "وصف للصورة الأولى" },
+            { src: "https://images.unsplash.com/photo-1494774157365-9e04c6720e47?auto=format&fit=crop&q=80&w=800", col: "md:col-span-2", row: "md:row-span-1", cap: "لحظة مميزة تم توثيقها" },
+            { src: "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&q=80&w=800", col: "md:col-span-1", row: "md:row-span-1", cap: "صورة تمثل حدث خاص" },
+            { src: "https://images.unsplash.com/photo-1506506041697-3f309d575798?auto=format&fit=crop&q=80&w=800", col: "md:col-span-1", row: "md:row-span-1", cap: "عنوان توضيحي للصورة" }
+        ];
+        const galleryContainer = document.getElementById('gallery-grid');
+        galleryImages.forEach(img => {
+            galleryContainer.innerHTML += `
+                <div class="${img.col} ${img.row} h-full">
+                    <div class="group relative w-full h-full rounded-2xl overflow-hidden cursor-pointer" onclick="openLightbox('${img.src}', '${img.cap}')">
+                        <div class="absolute inset-0 bg-black/30 group-hover:bg-transparent transition-colors duration-700 z-10"></div>
+                        <img src="${img.src}" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-[2s] ease-out" loading="lazy" />
+                        <div class="absolute bottom-0 right-0 left-0 p-6 bg-gradient-to-t from-black/80 to-transparent z-20 opacity-0 group-hover:opacity-100 transition-all duration-500">
+                            <p class="text-white font-arabic-serif text-lg font-light tracking-wide">${img.cap}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        lucide.createIcons();
+
+        function openLightbox(src, cap) {
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('lightbox-cap').innerText = cap;
+            document.getElementById('lightbox').classList.remove('hidden');
+            document.getElementById('lightbox').classList.add('flex');
+        }
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.add('hidden');
+            document.getElementById('lightbox').classList.remove('flex');
+        }
+
+        // === Voice Note Logic ===
+        let isVoiceNotePlaying = false;
+        function playVoiceNote() {
+            const audio = document.getElementById('voice-note-audio');
+            if (isVoiceNotePlaying) {
+                audio.pause();
+                isVoiceNotePlaying = false;
+            } else {
+                audio.play().catch(e => alert("للتجربة: تأكد من إضافة ملف صوت باسم demo-record.mp3 في نفس مسار الملف."));
+                isVoiceNotePlaying = true;
+            }
+        }
+
+        // === Surprise Logic (Unboxing) ===
+        function openSurprise() {
+            const closedBox = document.getElementById('surprise-closed');
+            const giftIcon = document.getElementById('gift-icon');
+            
+            // Shake effect
+            closedBox.classList.add('shake-animation');
+            
+            setTimeout(() => {
+                closedBox.classList.add('hidden');
+                document.getElementById('surprise-opened').classList.remove('hidden');
+                surpriseTriggered = true;
+                generateBurst();
+            }, 600); // wait for shake to finish
+        }
+
+        // === Night Sky & Particle System Canvas ===
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        let pWidth = canvas.width = window.innerWidth;
+        let pHeight = canvas.height = window.innerHeight;
+        let particles = [];
+        let stars = []; 
+
+        for(let i=0; i<80; i++) {
+            stars.push({
+                x: Math.random() * pWidth,
+                y: Math.random() * pHeight,
+                size: Math.random() * 1.5 + 0.5,
+                opacity: Math.random(),
+                fadeSpeed: Math.random() * 0.02 + 0.005,
+                fadingOut: Math.random() > 0.5
+            });
+        }
+
+        function createParticle(isBurst = false, x = null, y = null) {
+            const size = isBurst ? Math.random() * 8 + 2 : Math.random() * 2 + 1;
+            return {
+                x: isBurst ? x : Math.random() * pWidth,
+                y: isBurst ? y : pHeight + size + Math.random() * 100,
+                size: size,
+                speedY: isBurst ? (Math.random() - 1) * 15 - 2 : -(Math.random() * 1 + 0.5),
+                speedX: isBurst ? (Math.random() - 0.5) * 20 : Math.sin(Math.random() * Math.PI) * 0.5,
+                color: `rgba(244, 63, 94, ${Math.random() * 0.5 + 0.2})`,
+                type: 'heart',
+                life: isBurst ? 100 + Math.random() * 80 : Infinity,
+                initialLife: isBurst ? 180 : Infinity,
+                wobble: Math.random() * Math.PI * 2,
+                wobbleSpeed: Math.random() * 0.05
+            };
+        }
+
+        for (let i = 0; i < 30; i++) {
+            let p = createParticle();
+            p.y = Math.random() * pHeight; 
+            particles.push(p);
+        }
+
+        function drawHeart(ctx, x, y, size, color) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.translate(x, y);
+            ctx.scale(size / 15, size / 15);
+            ctx.moveTo(0, 0);
+            ctx.bezierCurveTo(0, -3, -5, -15, -15, -15);
+            ctx.bezierCurveTo(-25, -15, -25, -2.5, -25, -2.5);
+            ctx.bezierCurveTo(-25, 7, -15, 16, 0, 25);
+            ctx.bezierCurveTo(15, 16, 25, 7, 25, -2.5);
+            ctx.bezierCurveTo(25, -2.5, 25, -15, 15, -15);
+            ctx.bezierCurveTo(5, -15, 0, -3, 0, 0);
+            ctx.fillStyle = color;
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 10;
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, pWidth, pHeight);
+            
+            for(let i=0; i<stars.length; i++) {
+                let s = stars[i];
+                if(s.fadingOut) {
+                    s.opacity -= s.fadeSpeed;
+                    if(s.opacity <= 0) s.fadingOut = false;
+                } else {
+                    s.opacity += s.fadeSpeed;
+                    if(s.opacity >= 1) s.fadingOut = true;
+                }
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${Math.max(0, s.opacity)})`;
+                ctx.fill();
+            }
+
+            for (let i = 0; i < particles.length; i++) {
+                let p = particles[i];
+                p.wobble += p.wobbleSpeed;
+                p.x += p.speedX + (p.life === Infinity ? Math.sin(p.wobble) * 1 : 0);
+                p.y += p.speedY;
+
+                let currentOpacity = 1;
+                if (p.life !== Infinity) {
+                    p.life--;
+                    currentOpacity = p.life / p.initialLife;
+                    p.speedY += 0.2; 
+                } else if (p.y < pHeight * 0.2) {
+                    currentOpacity = p.y / (pHeight * 0.2); 
+                }
+
+                const finalColor = p.color.replace(/[\d\.]+\)$/g, `${currentOpacity})`);
+                drawHeart(ctx, p.x, p.y, p.size, finalColor);
+
+                if (p.life === Infinity && p.y < -50) {
+                    particles[i] = createParticle();
+                }
+            }
+
+            particles = particles.filter(p => p.life > 0);
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        function generateBurst() {
+            for (let i = 0; i < 250; i++) {
+                particles.push({
+                    x: pWidth / 2,
+                    y: pHeight / 2,
+                    size: Math.random() * 12 + 4,
+                    speedY: (Math.random() - 1) * 25 - 5,
+                    speedX: (Math.random() - 0.5) * 30,
+                    color: `rgba(255, ${Math.random() > 0.5 ? 215 : 50}, ${Math.random() > 0.5 ? 100 : 72}, 1)`,
+                    type: 'heart',
+                    life: Math.random() * 120 + 60,
+                    initialLife: 180,
+                    wobble: Math.random() * Math.PI * 2,
+                    wobbleSpeed: Math.random() * 0.2
+                });
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            pWidth = canvas.width = window.innerWidth;
+            pHeight = canvas.height = window.innerHeight;
+        });
+
+    </script>
+</body>
+</html>
+
+
+
